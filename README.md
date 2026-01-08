@@ -10,8 +10,26 @@ Generate changelogs from OpenAPI specification changes.
 
 ## Installation
 
+### From Source (Clone/Fork)
+
 ```bash
-go install steamedeo.dev/api-changelog-generator@latest
+# Clone the repository
+git clone https://github.com/yourusername/api-changelog-generator.git
+cd api-changelog-generator
+
+# Install to $GOPATH/bin (recommended)
+make install
+```
+
+Or build without installing:
+
+```bash
+# Build the binary locally
+make build
+
+# The binary will be available at:
+# - Windows: bin/api-changelog.exe
+# - Unix: bin/api-changelog
 ```
 
 ## Usage
@@ -36,15 +54,6 @@ api-changelog compare \
   --output ./CHANGELOG.md
 ```
 
-## Building from Source
-
-```bash
-git clone <repository-url>
-cd api-changelog-generator
-make build
-```
-
-The binary will be available at `bin/api-changelog.exe`.
 
 ## Requirements
 

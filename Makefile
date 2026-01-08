@@ -1,8 +1,15 @@
 # Variables
-BINARY_NAME=api-changelog.exe
-VERSION=$(shell git describe --tags --always --dirty 2>nul || echo dev)
-COMMIT=$(shell git rev-parse HEAD 2>nul || echo unknown)
-DATE=$(shell powershell -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ'")
+ifeq ($(OS),Windows_NT)
+	BINARY_NAME=api-changelog.exe
+	VERSION=$(shell git describe --tags --always --dirty 2>nul || echo dev)
+	COMMIT=$(shell git rev-parse HEAD 2>nul || echo unknown)
+	DATE=$(shell powershell -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ'")
+else
+	BINARY_NAME=api-changelog
+	VERSION=$(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+	COMMIT=$(shell git rev-parse HEAD 2>/dev/null || echo unknown)
+	DATE=$(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+endif
 LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE)"
 
 # Default target
@@ -25,17 +32,29 @@ build: ## Build the binary
 
 clean: ## Remove build artifacts
 	@echo Cleaning...
+ifeq ($(OS),Windows_NT)
 	@if exist bin rmdir /s /q bin
+else
+	@rm -rf bin
+endif
 	@go clean
 	@echo Clean complete
 
 install: ## Install the binary to GOPATH/bin
 	@echo Installing $(BINARY_NAME)...
-	@go install $(LDFLAGS) .
-	@echo Installed
+	@go build $(LDFLAGS) -o "$(shell go env GOPATH)/bin/$(BINARY_NAME)" .
+	@echo Installed to $(shell go env GOPATH)/bin/$(BINARY_NAME)
 
 push: ## Commit and push to main
+ifeq ($(OS),Windows_NT)
 	@powershell -ExecutionPolicy Bypass -File scripts/push.ps1
+else
+	@bash scripts/push.sh
+endif
 
 release: ## Create and push a release tag
+ifeq ($(OS),Windows_NT)
 	@powershell -ExecutionPolicy Bypass -File scripts/release.ps1
+else
+	@bash scripts/release.sh
+endif
